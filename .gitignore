@@ -1,0 +1,13 @@
+# API Key
+.env
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# Virtual Environment (Future Projects)
+.venv/
+venv/
+
+# VS Code Settings
+.vscode/
