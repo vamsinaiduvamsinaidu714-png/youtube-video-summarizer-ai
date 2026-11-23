@@ -38,20 +38,25 @@ genai.configure(api_key=api_key)
 
 # -----------------------------
 
-PROMPT = """
-You are an expert YouTube content analyst.
-
-Analyze the transcript and provide:
-
-1. Executive Summary
-2. Key Takeaways (5 points)
-3. Important Concepts
-4. Actionable Insights
+def build_prompt(language, transcript):
+    return f""" 
+You are an expert YouTube content analyst and educational AI assistant. 
+Analyze the transcript and provide the response in {language}. 
+Include the following sections: 
+1. Executive Summary 
+2. Key Takeaways (5 points) 
+3. Important Concepts 
+4. Actionable Insights 
 5. Final Conclusion
-
-Keep the response clear and easy to understand.
+Requirements: 
+- Use clear and simple language. 
+- Make it easy for students to understand. 
+- Focus only on the most important information. 
+- Avoid unnecessary details. 
+- Keep the response well-structured. 
+Transcript: 
+{transcript} 
 """
-
 # -----------------------------
 
 # Extract Transcript
@@ -91,7 +96,7 @@ def extract_transcript_details(youtube_url):
 
 # -----------------------------
 
-def generate_gemini_content(transcript_text):
+def generate_gemini_content(transcript_text, language):
     try:
 
 
@@ -99,9 +104,10 @@ def generate_gemini_content(transcript_text):
             "gemini-2.5-flash"
         )
 
-        response = model.generate_content(
-            PROMPT + "\n\nTranscript:\n" + transcript_text
-        )
+        prompt = build_prompt(language, transcript_text)
+
+        response = model.generate_content(prompt)
+        
 
         return response.text
 
@@ -125,6 +131,9 @@ st.write(
 youtube_link = st.text_input(
 "Paste YouTube Video URL"
 )
+language = st.selectbox(
+     "Choose Summary Language", ["English", "Telugu", "Hindi"]
+       )
 
 # Thumbnail Preview
 
@@ -145,7 +154,7 @@ if youtube_link:
         if video_id:
             st.image(
                 f"https://img.youtube.com/vi/{video_id}/0.jpg",
-                use_container_width=True
+                width="stretch"
             )
 
     except:
@@ -160,20 +169,21 @@ if st.button("Generate Summary"):
     if not youtube_link:
         st.warning("Please enter a YouTube URL")
 
-else:
+    else:
 
-    with st.spinner(
-        "Fetching transcript and generating summary..."
-    ):
+        with st.spinner(
+            "Fetching transcript and generating summary..."
+        ):
 
-        transcript_text = extract_transcript_details(
+            transcript_text = extract_transcript_details(
             youtube_link
         )
 
         if transcript_text:
 
             summary = generate_gemini_content(
-                transcript_text
+                transcript_text,
+                language
             )
 
             if summary:
